@@ -4,19 +4,23 @@
 
 ## Getting Started
 
-1. Install the dependency:
+Follow these steps to get up and running quickly!
 
-```bash
-npm i -S web-notifier
-```
+1. Install the dependency
 
-2. Generate VAPID Keys, these should be stored somewhere where they can be **reused between sessions** (ex. `process.env.VAPID_PRIVATE_KEY` and `process.env.VAPID_PUBLIC_KEY`).
+   ```bash
+   npm i -S web-notifier
+   ```
 
-```js
-console.log(WebNotifier.generateVAPIDKeys());
-```
+2. Before we continue, you'll need to generate Vapid keys and store them for future use.
 
-2. Instantiate an instance on the server
+   ```bash
+   npx web-push generate-vapid-keys
+   ```
+
+   There are two Vapid keys. The first is the private key which should not be shared. The second is the public key which can referenced in your frontend code. We recommend using a tool like [dotenv](https://www.npmjs.com/package/dotenv) to manage both public and private keys..
+
+3. Instantiate an instance on the server
 
 ```js
 const { WebNotifier, MongoAdapter } = require("web-notifier");
