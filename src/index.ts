@@ -1,17 +1,40 @@
-const Push = require("./utils/push");
-const Scheduler = require("./utils/scheduler");
+import Push from "./utils/push";
+import Scheduler from "./utils/scheduler";
+
+type VapidKeys = {
+  publicKey: string;
+  privateKey: string;
+  email: string;
+};
+
+type Adapter = {
+  
+}
+
+type WebNotifierArguments = {
+  vapidKeys: VapidKeys;
+  notificationDefaults?: {
+    badge: string;
+    icon: string;
+    url: string;
+  },
+  getUserPushSubscriptions: (userId: string) => Promise<string[]>,
+  removeUserPushSubscriptions: (userId: string, subscription: string) => Promise<void>;
+  adapter: 
+  adapter: new MongoAdapter(db.connection),
+};
 
 class WebNotifier {
   constructor(config) {
     this.vapidKeys = config.vapidKeys;
     this.push = new Push(this.vapidKeys, {
-      defaults: config.notificationDefaults || {}
+      defaults: config.notificationDefaults || {},
     });
     this.getUserPushSubscription = config.getUserPushSubscription;
     this.scheduler = new Scheduler({
       adapter: config.adapter,
       removeUserPushSubscription: config.removeUserPushSubscription,
-      sendNotification: this.sendNotification.bind(this)
+      sendNotification: this.sendNotification.bind(this),
     });
   }
 
@@ -27,15 +50,11 @@ class WebNotifier {
     return this.scheduler.cancelNotification(id);
   }
 
-  static generateVAPIDKeys() {
-    return Push.generateVAPIDKeys();
-  }
-
   async sendNotification({ userId, payload }) {
     const userSubscription = await this.getUserPushSubscription(userId);
     if (Array.isArray(userSubscription)) {
       await Promise.all(
-        userSubscription.map(subscription =>
+        userSubscription.map((subscription) =>
           this.push.sendNotification(userId, payload, subscription)
         )
       );
@@ -44,4 +63,4 @@ class WebNotifier {
     }
   }
 }
-module.exports = WebNotifier;
+export default WebNotifier;

@@ -2,7 +2,7 @@
   "name": "web-notifier",
   "version": "1.0.2",
   "description": "Easily send push notifications to your users through a service worker!",
-  "main": "server.js",
+  "main": "./index.js",
   "scripts": {
     "start": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,10 +10,11 @@
   "author": "brandon-pereira",
   "license": "ISC",
   "dependencies": {
-    "node-schedule": "^1.3.1",
-    "web-push": "^3.3.3"
+    "node-schedule": "^1.3.1"
   },
   "devDependencies": {
-    "nodemon": "^1.18.9"
+    "@tsconfig/node16": "^1.0.2",
+    "nodemon": "^1.18.9",
+    "typescript": "^4.5.2"
   }
 }
