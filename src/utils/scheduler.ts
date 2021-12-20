@@ -1,7 +1,30 @@
-const schedule = require("node-schedule");
+import { Adapter } from "./adapters/CoreAdapter";
 
-class Scheduler {
-  constructor({ adapter, sendNotification, removeUserPushSubscription }) {
+type sendNotification = <NotificationFormat, UserIdFormat>(
+  userId: UserIdFormat,
+  payload: NotificationFormat
+) => Promise<void>;
+type removeUserPushSubscription = <UserIdType>(
+  userId: UserIdType,
+  pushSubscription: string
+) => Promise<void>;
+
+interface SchedulerOptions {
+  adapter: Adapter;
+  sendNotification: sendNotification;
+  removeUserPushSubscription: removeUserPushSubscription;
+}
+
+class Scheduler<NotificationPayload, UserIdType> {
+  adapter: Adapter;
+  sendNotification: sendNotification;
+  removeUserPushSubscription: removeUserPushSubscription;
+
+  constructor({
+    adapter,
+    sendNotification,
+    removeUserPushSubscription,
+  }: SchedulerOptions) {
     if (!adapter) {
       throw new Error("Error: No adapter provided.");
     }
@@ -13,27 +36,33 @@ class Scheduler {
   }
 
   init() {
-    const rule = new schedule.RecurrenceRule();
-    rule.second = [new schedule.Range(0, 59)];
-    schedule.scheduleJob(rule, () => this.checkAndSendNotifications());
+    this.checkAndSendNotifications();
+    setInterval(() => {
+      this.checkAndSendNotifications();
+    }, 5000);
   }
 
-  schedule(date, userId, payload) {
+  schedule(
+    date: Date,
+    userId: UserIdType,
+    payload: Partial<NotificationPayload>
+  ) {
     return this.adapter.scheduleNotification(date, userId, payload);
   }
 
-  cancelNotification(notificationId) {
+  cancelNotification(notificationId: string) {
     return this.adapter.clearNotification(notificationId);
   }
 
   async checkAndSendNotifications() {
+    console.log("HELLO");
     const notifications = await this.adapter.fetchNotifications(new Date());
     if (notifications && notifications.length) {
       console.info(
         `${notifications.length} notifications in the queue. Notifying users.`
       );
       await Promise.all(
-        notifications.map(async notification => {
+        notifications.map(async (notification) => {
           try {
             await this.sendNotification(notification);
             await this.adapter.clearNotification(notification);
@@ -58,4 +87,4 @@ class Scheduler {
   }
 }
 
-module.exports = Scheduler;
+export default Scheduler;

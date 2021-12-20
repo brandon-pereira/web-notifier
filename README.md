@@ -51,7 +51,7 @@ const notifier = new WebNotifier({
   },
   getUserPushSubscriptions,
   removeUserPushSubscriptions,
-  adapter: new InMemoryAdapter(db.connection),
+  adapter: new InMemoryAdapter(),
 });
 ```
 

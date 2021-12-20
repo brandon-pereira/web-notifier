@@ -1,19 +1,32 @@
-const webpush = require("web-push");
+import webpush, { PushSubscription } from "web-push";
+import SubscriptionError from "./subscriptionError";
 
-class Push {
-  constructor({ publicKey, privateKey, email }, { defaults }) {
-    this.publicKey = publicKey;
-    this.privateKey = privateKey;
-    this.email = email;
-    this.defaults = defaults || {};
+export interface VapidKeys {
+  publicKey: string;
+  privateKey: string;
+  email: string;
+}
+
+interface Configuration<NotificationPayload> {
+  keys: VapidKeys;
+  notificationDefaults?: Partial<NotificationPayload>;
+}
+
+class Push<NotificationPayload, UserIdFormat> {
+  keys: VapidKeys;
+  notificationDefaults?: Partial<NotificationPayload>;
+
+  constructor(config: Configuration<NotificationPayload>) {
+    this.keys = config.keys;
+    this.notificationDefaults = config.notificationDefaults;
     this.init();
   }
 
   init() {
     webpush.setVapidDetails(
-      `mailto:${this.email}`,
-      this.publicKey,
-      this.privateKey
+      `mailto:${this.keys.email}`,
+      this.keys.publicKey,
+      this.keys.privateKey
     );
   }
 
@@ -25,10 +38,11 @@ class Push {
    * @param {String} pushSubscription user push subscription
    * @return {Promise}
    */
-  async sendNotification(userId, message, subscription) {
-    if (!message || !message.title) {
-      throw new Error("Incorrectly formatted message");
-    }
+  async sendNotification(
+    userId: UserIdFormat,
+    payload: NotificationPayload,
+    subscription: string
+  ) {
     const pushSubscription = this._parseSubscription(subscription);
     if (
       pushSubscription &&
@@ -36,9 +50,9 @@ class Push {
       pushSubscription.keys.p256dh &&
       pushSubscription.keys.auth
     ) {
-      message = {
-        ...this.defaults,
-        ...message
+      const message = {
+        ...this.notificationDefaults,
+        ...payload,
       };
       try {
         await webpush.sendNotification(
@@ -53,10 +67,10 @@ class Push {
     }
   }
 
-  _parseSubscription(subscription) {
-    let parsedSubscription = {};
+  _parseSubscription(subscription: string): PushSubscription | null {
+    let parsedSubscription: PushSubscription;
     try {
-      parsedSubscription = JSON.parse(subscription);
+      parsedSubscription = JSON.parse(subscription) as PushSubscription;
       parsedSubscription.keys.p256dh = Buffer.from(
         parsedSubscription.keys.p256dh
       ).toString();
@@ -73,16 +87,19 @@ class Push {
     return webpush.generateVAPIDKeys();
   }
 
-  _generateInvalidSubscriptionError(userId, pushSubscription) {
-    const error = new Error("Invalid User Subscription");
-    error.code = "INVALID_SUBSCRIPTION";
-    error.userId = userId;
-    error.pushSubscription =
+  _generateInvalidSubscriptionError(
+    userId: UserIdFormat,
+    pushSubscription: PushSubscription | string
+  ) {
+    const error = new SubscriptionError(
+      "Invalid User Subscription",
+      userId,
       typeof pushSubscription === "object"
         ? JSON.stringify(pushSubscription)
-        : pushSubscription;
+        : pushSubscription
+    );
     return error;
   }
 }
 
-module.exports = Push;
+export default Push;
