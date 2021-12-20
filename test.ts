@@ -6,7 +6,7 @@ const getUserPushSubscriptions = async (userId: string) => {
   console.log("getting user subscriptions", userId);
   return ["aaa"];
 };
-const removeUserPushSubscriptions = async (
+const removeUserPushSubscription = async (
   userId: string,
   pushSubscription: string
 ): Promise<void> => {
@@ -33,8 +33,8 @@ const notifier = new WebNotifier<NotificationPayload>({
     launchUrl: "/",
   },
   getUserPushSubscriptions,
-  removeUserPushSubscriptions,
-  adapter: new InMemoryAdapter(),
+  removeUserPushSubscription,
+  adapter: new InMemoryAdapter<NotificationPayload, string>(),
 });
 
 notifier.send("1", {

@@ -1,19 +1,20 @@
-import { Adapter } from "./CoreAdapter";
+import { Adapter, Notification } from "./CoreAdapter";
 
-interface InMemoryNotification {
-  id: number;
-  date: Date;
-  userId: string;
-  payload: any;
-}
-
-class InMemory implements Adapter {
-  queue: InMemoryNotification[];
-  constructor(initialQueue: InMemoryNotification[] = []) {
+class InMemory<NotificationFormat, UserIdFormat>
+  implements Adapter<NotificationFormat, UserIdFormat, number>
+{
+  queue: Notification<NotificationFormat, UserIdFormat, number>[];
+  constructor(
+    initialQueue: Notification<NotificationFormat, UserIdFormat, number>[] = []
+  ) {
     this.queue = initialQueue;
   }
 
-  async scheduleNotification(date: Date, userId: string, payload: any) {
+  async scheduleNotification(
+    date: Date,
+    userId: UserIdFormat,
+    payload: NotificationFormat
+  ) {
     const id = Math.random();
     this.queue.push({
       id,

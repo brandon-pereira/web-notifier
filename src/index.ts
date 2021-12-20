@@ -9,12 +9,12 @@ type VapidKeys = {
   email: string;
 };
 
-type removeUserPushSubscriptions<UserIdType> = (
-  userId: UserIdType,
+type removeUserPushSubscription<UserIdFormat> = (
+  userId: UserIdFormat,
   pushSubscription: string
 ) => Promise<void>;
-type getUserPushSubscriptions<UserIdPayload> = (
-  userId: UserIdPayload
+type getUserPushSubscriptions<UserIdFormat> = (
+  userId: UserIdFormat
 ) => Promise<string[]>;
 
 interface DefaultNotificationFormat {
@@ -25,12 +25,12 @@ interface DefaultNotificationFormat {
   launchUrl?: string;
 }
 
-type WebNotifierArguments<NotificationFormat, UserIdPayload> = {
+type WebNotifierArguments<NotificationFormat, UserIdFormat> = {
   vapidKeys: VapidKeys;
   notificationDefaults?: Partial<NotificationFormat>;
-  getUserPushSubscriptions: getUserPushSubscriptions<UserIdPayload>;
-  removeUserPushSubscriptions: removeUserPushSubscriptions<UserIdPayload>;
-  adapter: Adapter;
+  getUserPushSubscriptions: getUserPushSubscriptions<UserIdFormat>;
+  removeUserPushSubscription: removeUserPushSubscription<UserIdFormat>;
+  adapter: Adapter<NotificationFormat, UserIdFormat>;
 };
 
 class WebNotifier<
@@ -49,9 +49,9 @@ class WebNotifier<
       notificationDefaults: config.notificationDefaults || {},
     });
     this.getUserPushSubscriptions = config.getUserPushSubscriptions;
-    this.scheduler = new Scheduler({
+    this.scheduler = new Scheduler<NotificationFormat, UserIdFormat>({
       adapter: config.adapter,
-      removeUserPushSubscriptions: config.removeUserPushSubscriptions,
+      removeUserPushSubscription: config.removeUserPushSubscription,
       sendNotification: this.sendNotification.bind(this),
     });
   }
@@ -68,10 +68,7 @@ class WebNotifier<
     return this.scheduler.cancelNotification(id);
   }
 
-  private async sendNotification(
-    userId: UserIdFormat,
-    payload: NotificationFormat
-  ) {
+  async sendNotification(userId: UserIdFormat, payload: NotificationFormat) {
     const userSubscription = await this.getUserPushSubscriptions(userId);
     if (Array.isArray(userSubscription)) {
       await Promise.all(

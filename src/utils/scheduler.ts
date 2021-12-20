@@ -1,30 +1,31 @@
-import { Adapter } from "./adapters/CoreAdapter";
+import { Adapter } from "../adapters/CoreAdapter";
 
-type sendNotification = <NotificationFormat, UserIdFormat>(
+type sendNotification<NotificationFormat, UserIdFormat> = (
   userId: UserIdFormat,
   payload: NotificationFormat
 ) => Promise<void>;
-type removeUserPushSubscription = <UserIdType>(
-  userId: UserIdType,
+
+type removeUserPushSubscription<UserIdFormat> = (
+  userId: UserIdFormat,
   pushSubscription: string
 ) => Promise<void>;
 
-interface SchedulerOptions {
-  adapter: Adapter;
-  sendNotification: sendNotification;
-  removeUserPushSubscription: removeUserPushSubscription;
-}
+type SchedulerOptions<NotificationFormat, UserIdFormat> = {
+  adapter: Adapter<NotificationFormat, UserIdFormat>;
+  sendNotification: sendNotification<NotificationFormat, UserIdFormat>;
+  removeUserPushSubscription: removeUserPushSubscription<UserIdFormat>;
+};
 
-class Scheduler<NotificationPayload, UserIdType> {
-  adapter: Adapter;
-  sendNotification: sendNotification;
-  removeUserPushSubscription: removeUserPushSubscription;
+class Scheduler<NotificationFormat, UserIdFormat> {
+  adapter: Adapter<NotificationFormat, UserIdFormat>;
+  sendNotification: sendNotification<NotificationFormat, UserIdFormat>;
+  removeUserPushSubscription: removeUserPushSubscription<UserIdFormat>;
 
   constructor({
     adapter,
     sendNotification,
     removeUserPushSubscription,
-  }: SchedulerOptions) {
+  }: SchedulerOptions<NotificationFormat, UserIdFormat>) {
     if (!adapter) {
       throw new Error("Error: No adapter provided.");
     }
@@ -44,8 +45,8 @@ class Scheduler<NotificationPayload, UserIdType> {
 
   schedule(
     date: Date,
-    userId: UserIdType,
-    payload: Partial<NotificationPayload>
+    userId: UserIdFormat,
+    payload: Partial<NotificationFormat>
   ) {
     return this.adapter.scheduleNotification(date, userId, payload);
   }
@@ -61,10 +62,12 @@ class Scheduler<NotificationPayload, UserIdType> {
       console.info(
         `${notifications.length} notifications in the queue. Notifying users.`
       );
+      console.log(notifications);
       await Promise.all(
         notifications.map(async (notification) => {
           try {
-            await this.sendNotification(notification);
+            console.log(notification);
+            // await this.sendNotification(notification);
             await this.adapter.clearNotification(notification);
           } catch (err) {
             console.error(
@@ -72,14 +75,14 @@ class Scheduler<NotificationPayload, UserIdType> {
               err
             );
             await this.adapter.clearNotification(notification);
-            if (
-              err.code === "INVALID_SUBSCRIPTION" &&
-              err.userId &&
-              err.pushSubscription
-            ) {
-              console.log("Corrupt user subscription, removing...");
-              this.removeUserPushSubscription(err.userId, err.pushSubscription);
-            }
+            // if (
+            //   err.code === "INVALID_SUBSCRIPTION" &&
+            //   err.userId &&
+            //   err.pushSubscription
+            // ) {
+            //   console.log("Corrupt user subscription, removing...");
+            //   this.removeUserPushSubscription(err.userId, err.pushSubscription);
+            // }
           }
         })
       );
