@@ -9,13 +9,11 @@ type VapidKeys = {
   email: string;
 };
 
-type removeUserPushSubscription<UserIdFormat> = (
-  userId: UserIdFormat,
+type removeUserPushSubscription = (
+  userId: string,
   pushSubscription: string
 ) => Promise<void>;
-type getUserPushSubscriptions<UserIdFormat> = (
-  userId: UserIdFormat
-) => Promise<string[]>;
+type getUserPushSubscriptions = (userId: string) => Promise<string[]>;
 
 interface DefaultNotificationFormat {
   title: string;
@@ -25,42 +23,39 @@ interface DefaultNotificationFormat {
   launchUrl?: string;
 }
 
-type WebNotifierArguments<NotificationFormat, UserIdFormat> = {
+type WebNotifierArguments<NotificationFormat> = {
   vapidKeys: VapidKeys;
   notificationDefaults?: Partial<NotificationFormat>;
-  getUserPushSubscriptions: getUserPushSubscriptions<UserIdFormat>;
-  removeUserPushSubscription: removeUserPushSubscription<UserIdFormat>;
-  adapter: Adapter<NotificationFormat, UserIdFormat>;
+  getUserPushSubscriptions: getUserPushSubscriptions;
+  removeUserPushSubscription: removeUserPushSubscription;
+  adapter: Adapter<NotificationFormat>;
 };
 
-class WebNotifier<
-  NotificationFormat = DefaultNotificationFormat,
-  UserIdFormat = string
-> {
-  push: Push<NotificationFormat, UserIdFormat>;
-  scheduler: Scheduler<NotificationFormat, UserIdFormat>;
+class WebNotifier<NotificationFormat = DefaultNotificationFormat> {
+  push: Push<NotificationFormat>;
+  scheduler: Scheduler<NotificationFormat>;
   vapidKeys: VapidKeys;
-  getUserPushSubscriptions: getUserPushSubscriptions<UserIdFormat>;
+  getUserPushSubscriptions: getUserPushSubscriptions;
 
-  constructor(config: WebNotifierArguments<NotificationFormat, UserIdFormat>) {
+  constructor(config: WebNotifierArguments<NotificationFormat>) {
     this.vapidKeys = config.vapidKeys;
-    this.push = new Push<NotificationFormat, UserIdFormat>({
+    this.push = new Push<NotificationFormat>({
       keys: this.vapidKeys,
       notificationDefaults: config.notificationDefaults || {},
     });
     this.getUserPushSubscriptions = config.getUserPushSubscriptions;
-    this.scheduler = new Scheduler<NotificationFormat, UserIdFormat>({
+    this.scheduler = new Scheduler({
       adapter: config.adapter,
       removeUserPushSubscription: config.removeUserPushSubscription,
       sendNotification: this.sendNotification.bind(this),
     });
   }
 
-  schedule(date: Date, userId: UserIdFormat, payload: NotificationFormat) {
+  schedule(date: Date, userId: string, payload: NotificationFormat) {
     return this.scheduler.schedule(date, userId, payload);
   }
 
-  send(userId: UserIdFormat, payload: NotificationFormat) {
+  send(userId: string, payload: NotificationFormat) {
     return this.schedule(new Date(), userId, payload);
   }
 
@@ -68,7 +63,7 @@ class WebNotifier<
     return this.scheduler.cancelNotification(id);
   }
 
-  async sendNotification(userId: UserIdFormat, payload: NotificationFormat) {
+  async sendNotification(userId: string, payload: NotificationFormat) {
     const userSubscription = await this.getUserPushSubscriptions(userId);
     if (Array.isArray(userSubscription)) {
       await Promise.all(

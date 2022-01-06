@@ -12,7 +12,7 @@ interface Configuration<NotificationPayload> {
   notificationDefaults?: Partial<NotificationPayload>;
 }
 
-class Push<NotificationPayload, UserIdFormat> {
+class Push<NotificationPayload> {
   keys: VapidKeys;
   notificationDefaults?: Partial<NotificationPayload>;
 
@@ -39,7 +39,7 @@ class Push<NotificationPayload, UserIdFormat> {
    * @return {Promise}
    */
   async sendNotification(
-    userId: UserIdFormat,
+    userId: string,
     payload: NotificationPayload,
     subscription: string
   ) {
@@ -88,7 +88,7 @@ class Push<NotificationPayload, UserIdFormat> {
   }
 
   _generateInvalidSubscriptionError(
-    userId: UserIdFormat,
+    userId: string,
     pushSubscription: PushSubscription | string
   ) {
     const error = new SubscriptionError(

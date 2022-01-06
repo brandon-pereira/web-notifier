@@ -1,33 +1,23 @@
 // All adapters should `implement` this interface
-export interface Adapter<
-  NotificationFormat,
-  UserIdFormat = string,
-  NotificationIdFormat = string
-> {
+export interface Adapter<NotificationFormat, NotificationIdFormat = string> {
   scheduleNotification(
     date: Date,
-    userId: UserIdFormat,
+    userId: string,
     payload: Object
   ): Promise<void>;
 
   fetchNotifications(
     date: Date
-  ): Promise<
-    Notification<NotificationFormat, UserIdFormat, NotificationIdFormat>[]
-  >;
+  ): Promise<Notification<NotificationFormat, NotificationIdFormat>[]>;
 
   clearNotification(id: NotificationIdFormat): Promise<boolean>;
 }
 
 // There is a notion of "Notification" which contains abstract send information, and
 // "NotificationPayload" which is details to send to user.
-export interface Notification<
-  NotificationFormat,
-  UserIdFormat,
-  NotificationIdFormat
-> {
+export interface Notification<NotificationFormat, NotificationIdFormat> {
   id: NotificationIdFormat;
   date: Date;
-  userId: UserIdFormat;
+  userId: string;
   payload: NotificationFormat;
 }

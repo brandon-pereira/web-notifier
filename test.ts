@@ -2,15 +2,20 @@ import "dotenv/config";
 import WebNotifier from "./src";
 import InMemoryAdapter from "./src/adapters/InMemoryAdapter";
 
+const users: { [key: string]: string[] } = {
+  user1: ["1"],
+};
+
 const getUserPushSubscriptions = async (userId: string) => {
   console.log("getting user subscriptions", userId);
-  return ["aaa"];
+  return users[userId];
 };
 const removeUserPushSubscription = async (
   userId: string,
   pushSubscription: string
 ): Promise<void> => {
   console.log("Remove invalid subscription", userId, pushSubscription);
+  users[userId] = users[userId].filter((n) => n !== pushSubscription);
 };
 
 interface NotificationPayload {
@@ -34,9 +39,15 @@ const notifier = new WebNotifier<NotificationPayload>({
   },
   getUserPushSubscriptions,
   removeUserPushSubscription,
-  adapter: new InMemoryAdapter<NotificationPayload, string>(),
+  adapter: new InMemoryAdapter<NotificationPayload>(),
 });
 
-notifier.send("1", {
-  title: "Hello World",
+notifier.send("user1", {
+  title: "This will send instantly",
+});
+
+const when = new Date();
+when.setMinutes(when.getMinutes() + 1);
+notifier.schedule(when, "user1", {
+  title: "This will send in 1 minute",
 });

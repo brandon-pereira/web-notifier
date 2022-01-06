@@ -66,10 +66,10 @@ notifier.send(userId, {
 You can also defer the message till a later date by using
 
 ```js
-cont when = new Date();
-when.setHour(when.getHour() + 1);
+const when = new Date();
+when.setHours(when.getHours() + 1);
 notifier.schedule(when, userId, {
-  title: "This will send in 1 hour"
+  title: "This will send in 1 hour",
 });
 ```
 

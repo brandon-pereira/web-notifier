@@ -1,21 +1,19 @@
 import { Adapter, Notification } from "./CoreAdapter";
 
-class InMemory<NotificationFormat, UserIdFormat>
-  implements Adapter<NotificationFormat, UserIdFormat, number>
+class InMemory<NotificationFormat>
+  implements Adapter<NotificationFormat, string>
 {
-  queue: Notification<NotificationFormat, UserIdFormat, number>[];
-  constructor(
-    initialQueue: Notification<NotificationFormat, UserIdFormat, number>[] = []
-  ) {
+  queue: Notification<NotificationFormat, string>[];
+  constructor(initialQueue: Notification<NotificationFormat, string>[] = []) {
     this.queue = initialQueue;
   }
 
   async scheduleNotification(
     date: Date,
-    userId: UserIdFormat,
+    userId: string,
     payload: NotificationFormat
   ) {
-    const id = Math.random();
+    const id = `${Math.random()}`;
     this.queue.push({
       id,
       date,
@@ -28,7 +26,7 @@ class InMemory<NotificationFormat, UserIdFormat>
     return this.queue.filter((notification) => notification.date <= date);
   }
 
-  async clearNotification(id: number) {
+  async clearNotification(id: string) {
     this.queue = this.queue.filter((n) => n.id !== id);
     return true;
   }
