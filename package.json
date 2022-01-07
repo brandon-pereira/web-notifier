@@ -4,6 +4,7 @@
   "description": "Easily send push notifications to your users through a service worker!",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": "github:brandon-pereira/web-notifier",
   "scripts": {
     "start": "tsnd --respawn --exit-child --watch src ./test",
     "test": "tsc --noemit",
