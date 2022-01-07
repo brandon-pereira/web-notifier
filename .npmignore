@@ -3,3 +3,7 @@ node_modules
 .env
 *.node_modules
 .nvmrc
+src
+*.md
+./test.ts
+tsconfig.json

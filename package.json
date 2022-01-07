@@ -1,6 +1,6 @@
 {
   "name": "web-notifier",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Easily send push notifications to your users through a service worker!",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
