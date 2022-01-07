@@ -55,7 +55,7 @@ const notifier = new WebNotifier({
 });
 ```
 
-3. Send a push notification
+4. Send a push notification
 
 ```js
 notifier.send(userId, {
@@ -86,3 +86,12 @@ The following adapters are available:
 - **MongoDb** - This leverages MongoDB and [mongoose](https://mongoosejs.com/) as a storage mechanism
 
 - **CoreAdapter** - If you need to implement your own storage mechanism for another service, the implementation should extend from CoreAdapter. `InMemory` adapter will be a good reference of how to properly construct an adapter.
+
+## Managing User Subscriptions
+
+One thing this package does **not** do is user subscription management. From the client, you will receive a push subscription address. You'll need to store this and associate it with a user.
+
+WebNotifier expects the following functions passed in:
+
+- **getUserPushSubscriptions** - this function will provide a userId and it should return an array of push subscriptions to send to. You can provide one or a million, it will slowly send them as the resources are available.
+- **removeUserPushSubscriptions** - Sometimes, users will block your push notifications. This function will allow you to remove a push subscription from a user.
