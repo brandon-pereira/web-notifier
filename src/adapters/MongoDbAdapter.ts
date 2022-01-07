@@ -4,11 +4,9 @@ import { Adapter, Notification } from "./CoreAdapter";
 class MongoDbAdapter<NotificationFormat>
   implements Adapter<NotificationFormat, string>
 {
-  private mongoose: typeof mongoose;
   private queue: mongoose.Model<Notification<NotificationFormat, string>>;
 
-  constructor(instance: typeof mongoose) {
-    this.mongoose = instance;
+  constructor() {
     const schema = new Schema<Notification<NotificationFormat, string>>({
       userId: String,
       date: Date,
